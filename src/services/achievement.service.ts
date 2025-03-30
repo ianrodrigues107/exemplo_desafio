@@ -9,14 +9,15 @@ export class AchievementService {
     this.prisma = new PrismaClient();
   }
 
-  async addXp(userId: string, xp: number) {
+  async addXp(userId: string, xpAmount: number) {
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: { xp: { increment: xp } },
+      data: { xp: { increment: xpAmount } },
     });
-
-    // Verifica se subiu de nível (ex: 100 XP = nível 1)
-    const newLevel = Math.floor(user.xp / 100);
+  
+    const xpThreshold = 100; // XP necessário por nível
+    const newLevel = Math.floor(user.xp / xpThreshold);
+    
     if (newLevel > user.level) {
       await this.prisma.user.update({
         where: { id: userId },

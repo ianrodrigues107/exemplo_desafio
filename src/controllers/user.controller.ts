@@ -8,6 +8,13 @@ import { Upload } from '@aws-sdk/lib-storage';
 const prisma = new PrismaClient();
 
 export class UserController {
+  async getPreferences(req: Request, res: Response) {
+    const preferences = await prisma.preference.findMany({
+      where: { userId: req.user.id },
+      include: { activityType: true }
+    });
+    res.json(preferences);
+  }
   async uploadAvatar(req: Request, res: Response) {
     try {
       // Verifica se o usuário está autenticado
