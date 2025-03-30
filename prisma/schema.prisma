@@ -23,6 +23,7 @@ model User {
   activities     Activity[]            @relation("Creator")
   participations ActivityParticipant[]
   preferences    Preference[]
+  achievements UserAchievement[]
 }
 
 model Activity {
@@ -76,4 +77,20 @@ model ActivityAddress {
   activityId String   @unique
   latitude   Float
   longitude  Float
+}
+model Achievement {
+  id          String     @id @default(uuid())
+  name        String     // Ex: "Primeiro Check-in"
+  description String?
+  criterion   String     // Ex: "FIRST_CHECKIN"
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  user          User        @relation(fields: [userId], references: [id])
+  userId        String
+  achievement   Achievement @relation(fields: [achievementId], references: [id])
+  achievementId String
+  createdAt     DateTime    @default(now())
 }

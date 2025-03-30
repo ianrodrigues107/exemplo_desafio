@@ -12,6 +12,7 @@ router.post(
   upload.single('image'),
   activityController.create
 );
+router.put('/:id/approve', activityController.approveParticipant);
 
 
 export default router;
