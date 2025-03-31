@@ -50,7 +50,7 @@ model ActivityParticipant {
   activityId  String
   user        User      @relation(fields: [userId], references: [id])
   userId      String
-  approved    Boolean   @default(false) // Para atividades privadas
+  approved    Boolean   @default(false) 
   confirmedAt DateTime?
 }
 
@@ -80,9 +80,9 @@ model ActivityAddress {
 }
 model Achievement {
   id          String     @id @default(uuid())
-  name        String     // Ex: "Primeiro Check-in"
+  name        String     
   description String?
-  criterion   String     // Ex: "FIRST_CHECKIN"
+  criterion   String     
   users       UserAchievement[]
 }
 

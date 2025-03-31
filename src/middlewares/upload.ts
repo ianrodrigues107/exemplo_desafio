@@ -1,6 +1,4 @@
 import multer from 'multer';
-import { Upload } from '@aws-sdk/lib-storage';
-import { s3Client } from '../config/localstack';
 
 export const upload = multer({
   storage: multer.memoryStorage(),

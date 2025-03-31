@@ -5,7 +5,7 @@ declare global {
     interface Request {
       user?: {
         id: string;
-      } & Partial<User>; // Inclui campos opcionais do seu modelo User
+      } & Partial<User>;
     }
   }
 }

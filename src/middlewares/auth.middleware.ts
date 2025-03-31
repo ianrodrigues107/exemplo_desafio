@@ -2,18 +2,18 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import prisma from "../orm/prisma";
 
-// Interface para o payload do token JWT
+
 interface JwtPayload {
   id: string;
 }
 
-// Extendendo a interface Request do Express
+
 declare global {
   namespace Express {
     interface Request {
       user?: {
         id: string;
-        // Adicione outras propriedades do usuário conforme necessário
+        
       };
     }
   }
@@ -38,7 +38,6 @@ export const authenticate = async (
       where: { id: decoded.id },
       select: {
         id: true,
-        // Adicione outros campos que você queira disponíveis em req.user
       }
     });
 

@@ -5,7 +5,7 @@ import { ApiError } from '../utils/apiError';
 declare global {
   namespace Express {
     interface Request {
-      userId?: string; // Adicionando a tipagem para userId
+      userId?: string; 
     }
   }
 }
@@ -17,13 +17,13 @@ export class ActivityController {
     try {
       const { title, description, typeId, scheduledDate, isPrivate } = req.body;
       
-      // Verificação explícita do userId
+    
       if (!req.userId) {
         throw new ApiError(401, 'Usuário não autenticado');
       }
 
       const activity = await this.activityService.createActivity(
-        req.userId, // Agora garantido como string
+        req.userId, 
         title,
         description,
         typeId,

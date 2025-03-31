@@ -15,7 +15,7 @@ export class AchievementService {
       data: { xp: { increment: xpAmount } },
     });
   
-    const xpThreshold = 100; // XP necessário por nível
+    const xpThreshold = 100; 
     const newLevel = Math.floor(user.xp / xpThreshold);
     
     if (newLevel > user.level) {
@@ -34,7 +34,6 @@ export class AchievementService {
 
     if (!achievement) return;
 
-    // Verifica se o usuário já tem a conquista
     const hasAchievement = await this.prisma.userAchievement.findFirst({
       where: { 
         userId,
