@@ -1,39 +1,62 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-import { ApiError } from '../utils/apiError';
+import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
+import prisma from "../orm/prisma";
 
-const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'sua_chave_secreta';
+// Interface para o payload do token JWT
+interface JwtPayload {
+  id: string;
+}
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+// Extendendo a interface Request do Express
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+        // Adicione outras propriedades do usuário conforme necessário
+      };
+    }
+  }
+}
+
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   try {
- 
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) throw new ApiError(401, 'Token não fornecido');
+    const token = req.header("Authorization")?.replace("Bearer ", "");
+    
+    if (!token) {
+      res.status(401).json({ error: "Token ausente" });
+      return;
+    }
 
-   
-    const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
     
-    
-    const user = await prisma.user.findUnique({
-      where: { 
-        id: decoded.id,
-        deletedAt: null 
+    const user = await prisma.user.findUnique({ 
+      where: { id: decoded.id },
+      select: {
+        id: true,
+        // Adicione outros campos que você queira disponíveis em req.user
       }
     });
 
-    if (!user) throw new ApiError(401, 'Usuário não encontrado ou conta desativada');
+    if (!user) {
+      res.status(401).json({ error: "Usuário não encontrado" });
+      return;
+    }
 
-    
-    req.userId = user.id;
+    req.user = user;
     next();
-
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      next(new ApiError(401, 'Token inválido'));
+    if (error instanceof jwt.TokenExpiredError) {
+      res.status(401).json({ error: "Token expirado" });
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      res.status(401).json({ error: "Token inválido" });
     } else {
-      next(error); 
+      console.error("Erro na autenticação:", error);
+      res.status(500).json({ error: "Erro interno no servidor" });
     }
   }
 };

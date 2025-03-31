@@ -1,6 +1,14 @@
 import { Request, Response } from 'express';
 import { ActivityService } from '../services/activity.service';
-import { ApiError } from '../utils/apiError'; // Assumindo que você tem uma classe de erro personalizada
+import { ApiError } from '../utils/apiError';
+
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string; // Adicionando a tipagem para userId
+    }
+  }
+}
 
 export class ActivityController {
   private activityService = new ActivityService();
@@ -8,8 +16,14 @@ export class ActivityController {
   async create(req: Request, res: Response) {
     try {
       const { title, description, typeId, scheduledDate, isPrivate } = req.body;
+      
+      // Verificação explícita do userId
+      if (!req.userId) {
+        throw new ApiError(401, 'Usuário não autenticado');
+      }
+
       const activity = await this.activityService.createActivity(
-        req.userId, 
+        req.userId, // Agora garantido como string
         title,
         description,
         typeId,
@@ -23,10 +37,11 @@ export class ActivityController {
       });
     } catch (error) {
       if (error instanceof ApiError) {
-        return res.status(error.statusCode).json({
+        res.status(error.statusCode).json({
           status: 'error',
           message: error.message,
         });
+        return;
       }
       res.status(500).json({
         status: 'error',
@@ -50,13 +65,11 @@ export class ActivityController {
         approve
       );
 
-      // Se for uma aprovação (não uma rejeição), conceda XP/conquistas
       if (approve) {
         try {
           await this.activityService.confirmCheckIn(activityId, userId, 'SYSTEM_APPROVAL');
         } catch (xpError) {
           console.error('Erro ao conceder XP/conquistas:', xpError);
-          // Não falha a operação principal
         }
       }
 
@@ -66,10 +79,11 @@ export class ActivityController {
       });
     } catch (error) {
       if (error instanceof ApiError) {
-        return res.status(error.statusCode).json({
+        res.status(error.statusCode).json({
           status: 'error',
           message: error.message,
         });
+        return;
       }
       res.status(500).json({
         status: 'error',

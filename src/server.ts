@@ -1,18 +1,17 @@
 import express from 'express';
-import { authMiddleware } from './middlewares/auth.middleware';
 import dotenv from 'dotenv';
-import { UserController } from './controllers/user.controller';
+import { authenticate } from "./middlewares/auth.middleware"; // Importe como authenticate
+import userController from "./controllers/user.controller"; // Já é uma instância
 
 dotenv.config();
 
 const app = express();
-const userController = new UserController();
 
 app.use(express.json());
 
 // Rota corretamente tipada
 app.put('/api/user/update', 
-  authMiddleware, 
+  authenticate, // Use o middleware importado
   (req, res, next) => {
     userController.updateUser(req, res).catch(next);
   }
