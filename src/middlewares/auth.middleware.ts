@@ -6,11 +6,7 @@ import { ApiError } from '../utils/apiError';
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET || 'sua_chave_secreta';
 
-export const authMiddleware = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
  
     const token = req.header('Authorization')?.replace('Bearer ', '');

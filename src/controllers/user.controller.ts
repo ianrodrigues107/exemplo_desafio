@@ -4,10 +4,58 @@ import { ApiError } from '../utils/apiError';
 import { uploadAvatar } from '../middlewares/upload';
 import { s3Client } from '../config/localstack';
 import { Upload } from '@aws-sdk/lib-storage';
+import { hash } from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
+
 export class UserController {
+  async updateUser(req: Request, res: Response): Promise<void> {
+    try {
+      const { name, email, password } = req.body;
+      const userId = req.userId;
+
+      if (!userId) {
+        res.status(401).json({ error: 'Usuário não autenticado' });
+        return;
+      }
+
+      const updateData: any = { name, email };
+      if (password) {
+        updateData.password = await hash(password, 10);
+      }
+
+      const updatedUser = await prisma.user.update({
+        where: { id: userId },
+        data: updateData,
+        select: { id: true, name: true, email: true, avatar: true }
+      });
+
+      res.status(200).json({
+        status: 'success',
+        data: updatedUser
+      });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        res.status(error.statusCode).json({
+          status: 'error',
+          message: error.message
+        });
+        return;
+      }
+      res.status(500).json({
+        status: 'error',
+        message: 'Erro interno no servidor'
+      });
+    }
+  }
   async getPreferences(req: Request, res: Response) {
     const preferences = await prisma.preference.findMany({
       where: { userId: req.user.id },

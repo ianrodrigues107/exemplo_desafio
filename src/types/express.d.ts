@@ -3,8 +3,9 @@ import { User } from '@prisma/client';
 declare global {
   namespace Express {
     interface Request {
-      userId?: string;
-      user?: User;
+      user?: {
+        id: string;
+      } & Partial<User>; // Inclui campos opcionais do seu modelo User
     }
   }
 }
